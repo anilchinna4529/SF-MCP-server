@@ -11,6 +11,7 @@ import { describeObjectTool } from "./tools/describeObject.js";
 import { queryRecordsTool } from "./tools/queryRecords.js";
 import { getRecordSummaryTool } from "./tools/getRecordSummary.js";
 import { createTaskTool } from "./tools/createTask.js";
+import { createCustomObjectTool } from "./tools/createCustomObject.js";
 import { readSchemaResource } from "./resources/schemaResource.js";
 
 const server = new Server(
@@ -88,6 +89,35 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ["whoId", "subject"]
         }
+      },
+      {
+        name: "create_custom_object",
+        description: "Create a custom object in Salesforce with specified fields.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            objectName: { type: "string", description: "API name for the custom object (without __c suffix)" },
+            label: { type: "string", description: "Label for the custom object" },
+            pluralLabel: { type: "string", description: "Plural label for the custom object" },
+            fields: {
+              type: "array",
+              description: "Array of field definitions",
+              items: {
+                type: "object",
+                properties: {
+                  fullName: { type: "string", description: "API name for the field (without __c suffix)" },
+                  label: { type: "string", description: "Label for the field" },
+                  type: { type: "string", description: "Data type (Text, Email, Phone, Number, etc.)" },
+                  length: { type: "number", description: "Length for text fields" },
+                  required: { type: "boolean", description: "Whether the field is required" },
+                  description: { type: "string", description: "Description of the field" }
+                },
+                required: ["fullName", "label", "type"]
+              }
+            }
+          },
+          required: ["objectName", "label", "pluralLabel", "fields"]
+        }
       }
     ]
   };
@@ -95,16 +125,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
+  const toolArgs = args ?? {};
 
   switch (name) {
     case "describe_object":
-      return describeObjectTool(args);
+      return describeObjectTool(toolArgs);
     case "query_records":
-      return queryRecordsTool(args);
+      return queryRecordsTool(toolArgs);
     case "get_record_summary":
-      return getRecordSummaryTool(args);
+      return getRecordSummaryTool(toolArgs);
     case "create_task":
-      return createTaskTool(args);
+      return createTaskTool(toolArgs);
+    case "create_custom_object":
+      return createCustomObjectTool(toolArgs);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

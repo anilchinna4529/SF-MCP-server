@@ -1,0 +1,38 @@
+{
+  "FullName": "BrandInfo__c",
+  "Metadata": {
+    "label": "Brand Info",
+    "pluralLabel": "Brand Infos",
+    "nameField": {
+      "label": "Brand Info Name",
+      "type": "Text",
+      "length": 80
+    },
+    "fields": [
+      {
+        "fullName": "Email__c",
+        "label": "Email",
+        "type": "Email"
+      },
+      {
+        "fullName": "Phone__c",
+        "label": "Phone",
+        "type": "Phone"
+      },
+      {
+        "fullName": "Address__c",
+        "label": "Address",
+        "type": "TextArea",
+        "length": 255
+      },
+      {
+        "fullName": "Pincode__c",
+        "label": "Pincode/Zipcode",
+        "type": "Text",
+        "length": 20
+      }
+    ],
+    "deploymentStatus": "Deployed",
+    "sharingModel": "ReadWrite"
+  }
+}
