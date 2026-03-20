@@ -12,6 +12,12 @@ import { queryRecordsTool } from "./tools/queryRecords.js";
 import { getRecordSummaryTool } from "./tools/getRecordSummary.js";
 import { createTaskTool } from "./tools/createTask.js";
 import { createCustomObjectTool } from "./tools/createCustomObject.js";
+import { createRecordTool } from "./tools/createRecord.js";
+import { updateRecordTool } from "./tools/updateRecord.js";
+import { createCustomFieldTool } from "./tools/createCustomField.js";
+import { createApexClassTool } from "./tools/createApexClass.js";
+import { createLWCTool } from "./tools/createLWC.js";
+import { createMetadataTool } from "./tools/createMetadata.js";
 import { readSchemaResource } from "./resources/schemaResource.js";
 
 const server = new Server(
@@ -118,6 +124,91 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ["objectName", "label", "pluralLabel", "fields"]
         }
+      },
+      {
+        name: "create_record",
+        description: "Create a generic Salesforce record (e.g., User, Account).",
+        inputSchema: {
+          type: "object",
+          properties: {
+            objectName: { type: "string" },
+            payload: { type: "object", description: "Key-value pairs of fields to insert" }
+          },
+          required: ["objectName", "payload"]
+        }
+      },
+      {
+        name: "update_record",
+        description: "Update an existing Salesforce record.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            objectName: { type: "string" },
+            recordId: { type: "string" },
+            payload: { type: "object", description: "Key-value pairs of fields to update" }
+          },
+          required: ["objectName", "recordId", "payload"]
+        }
+      },
+      {
+        name: "create_custom_field",
+        description: "Create a custom field on a given object using the SOAP Metadata API.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            objectName: { type: "string", description: "API name for the custom object (without __c suffix)" },
+            field: {
+              type: "object",
+              properties: {
+                fullName: { type: "string", description: "API name for the field (without __c suffix)" },
+                label: { type: "string" },
+                type: { type: "string" },
+                length: { type: "number" },
+                required: { type: "boolean" },
+                description: { type: "string" }
+              },
+              required: ["fullName", "label", "type"]
+            }
+          },
+          required: ["objectName", "field"]
+        }
+      },
+      {
+        name: "create_apex_class",
+        description: "Create a new Apex Class using the Tooling API.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            className: { type: "string" },
+            body: { type: "string", description: "The full Apex class body code" }
+          },
+          required: ["className", "body"]
+        }
+      },
+      {
+        name: "create_lwc",
+        description: "Create a new Lightning Web Component (LWC) bundle.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            bundleName: { type: "string" },
+            html: { type: "string" },
+            js: { type: "string" },
+            xml: { type: "string", description: "Ignored for Tooling API, metadata handles exposure automatically" }
+          },
+          required: ["bundleName", "js"]
+        }
+      },
+      {
+        name: "create_metadata",
+        description: "Deploy raw Salesforce Metadata (Flows, Page Layouts, Reports, Dashboards) via SOAP API. Provide raw XML representing a standard deployment envelope.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            rawXml: { type: "string", description: "Complete, raw XML SOAP Envelope for the createMetadata call" }
+          },
+          required: ["rawXml"]
+        }
       }
     ]
   };
@@ -138,6 +229,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return createTaskTool(toolArgs);
     case "create_custom_object":
       return createCustomObjectTool(toolArgs);
+    case "create_record":
+      return createRecordTool(toolArgs);
+    case "update_record":
+      return updateRecordTool(toolArgs);
+    case "create_custom_field":
+      return createCustomFieldTool(toolArgs);
+    case "create_apex_class":
+      return createApexClassTool(toolArgs);
+    case "create_lwc":
+      return createLWCTool(toolArgs);
+    case "create_metadata":
+      return createMetadataTool(toolArgs);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
